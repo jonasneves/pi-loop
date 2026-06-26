@@ -8,6 +8,9 @@ dependencies = ["asyncssh>=2.14", "zeroconf>=0.131", "bleak>=0.22"]
 [project.optional-dependencies]
 mcp = ["mcp>=1.2"]
 
+[dependency-groups]
+dev = ["pytest>=8", "pytest-asyncio>=0.23"]
+
 [project.scripts]
 piloop = "piloop.cli:main"
 piloop-mcp = "piloop.mcp:main"
