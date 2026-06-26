@@ -10,7 +10,7 @@ from pathlib import Path
 from piloop import pis as B
 from piloop import transport as T
 
-AGENT_SERVICE = "piloop-agent.service"
+LOOP_SERVICE = "piloop-bridge.service"
 AGENT_DEST = "/opt/piloop/agent"
 
 
@@ -19,11 +19,11 @@ async def status(pi: str) -> dict:
     out = {"pi": pi, "ssh_host": p["ssh_host"], "reachable": False,
            "agent_active": None, "last_tick": None}
     try:
-        active = await T.run(p, f"systemctl is-active {AGENT_SERVICE}", check=False)
+        active = await T.run(p, f"systemctl is-active {LOOP_SERVICE}", check=False)
         out["reachable"] = True
         out["agent_active"] = active.strip() == "active"
         tick = await T.run(
-            p, f"systemctl show -p ActiveEnterTimestamp --value {AGENT_SERVICE}",
+            p, f"systemctl show -p ActiveEnterTimestamp --value {LOOP_SERVICE}",
             check=False)
         out["last_tick"] = tick.strip() or None
     except T.SSHError:
@@ -42,13 +42,13 @@ async def deploy(pi: str, agent_dir: Path) -> dict:
         "-e", "ssh -o StrictHostKeyChecking=accept-new")
     if await proc.wait() != 0:
         raise T.SSHError(f"{p['ssh_host']}: rsync failed")
-    await T.run(p, f"sudo systemctl restart {AGENT_SERVICE}")
+    await T.run(p, f"sudo systemctl restart {LOOP_SERVICE}")
     return {"pi": pi, "synced": True}
 
 
 async def logs(pi: str):
     p = B.load_pi(pi)
-    async for line in T.stream(p, f"journalctl -fu {AGENT_SERVICE} -n 40 -o cat"):
+    async for line in T.stream(p, f"journalctl -fu {LOOP_SERVICE} -n 40 -o cat"):
         yield line
 
 

@@ -6,10 +6,8 @@ After=bluetooth.target piloop-agent.service
 Wants=bluetooth.target
 
 [Service]
-# Bridges the agent service's console. The agent runs as its own service writing
-# to a known PTY device; the bridge attaches the BLE side. We run the agent
-# *through* the bridge's PTY here: the bridge forks the loop as its child.
-Environment=BLE_NAME=piloop
+# This service IS the running loop. It forks loop.py as its child under the PTY
+# and is the unit the host's status/logs/deploy commands target.
 EnvironmentFile=-/etc/piloop/agent.env
 ExecStart=/usr/bin/python3 /opt/piloop/bridge/bridge.py -- /usr/bin/python3 /opt/piloop/agent/loop.py
 Restart=always

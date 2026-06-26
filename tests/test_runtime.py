@@ -6,8 +6,8 @@ from piloop import runtime
 def test_console_is_pure_registry_read():
     out = runtime.console("example")
     assert out["pi"] == "example"
-    assert out["ble_name"] == "piloop-example"
-    assert "connect ble piloop-example" in out["hint"]
+    assert out["ble_name"] == "piloop-XXXX"
+    assert "connect ble piloop-XXXX" in out["hint"]
 
 
 @pytest.mark.asyncio

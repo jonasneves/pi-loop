@@ -12,7 +12,7 @@ def test_load_pi_returns_schema():
     assert p["name"] == "example"
     assert p["ssh_host"] == "example.local"
     assert p["user"] == "pi"
-    assert p["ble_name"] == "piloop-example"
+    assert p["ble_name"] == "piloop-XXXX"
     assert "notes" in p
 
 

@@ -68,6 +68,27 @@ async def run_bridge(command: list[str], ble_name: str) -> None:
     await server.stop()
 
 
+def serial_suffix(cpuinfo_text: str) -> str:
+    """Extract the last 4 chars (uppercase) of the CPU serial from /proc/cpuinfo text."""
+    for line in cpuinfo_text.splitlines():
+        if line.startswith("Serial"):
+            parts = line.split(":")
+            if len(parts) >= 2:
+                serial = parts[-1].strip()
+                if serial:
+                    return serial[-4:].upper()
+    return "0000"
+
+
+def default_ble_name() -> str:
+    try:
+        with open("/proc/cpuinfo") as f:
+            text = f.read()
+    except OSError:
+        text = ""
+    return f"piloop-{serial_suffix(text)}"
+
+
 def _parse_argv(argv):
     # bridge.py -- cmd arg arg
     sep = argv.index("--")
@@ -76,4 +97,4 @@ def _parse_argv(argv):
 
 if __name__ == "__main__":
     cmd = _parse_argv(sys.argv)
-    asyncio.run(run_bridge(cmd, os.environ.get("BLE_NAME", "piloop")))
+    asyncio.run(run_bridge(cmd, os.environ.get("BLE_NAME") or default_ble_name()))

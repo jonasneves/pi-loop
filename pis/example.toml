@@ -2,10 +2,12 @@
 [pi]
 ssh_host = "example.local"   # mDNS name or static IP
 user     = "pi"
-ble_name = "piloop-example"  # what the bridge advertises = what tab-device's `connect ble` picks
+ble_name = "piloop-XXXX"  # bridge advertises piloop-<SUFFIX> where SUFFIX = last 4 of CPU serial, uppercase
+                          # discover via: piloop scan --ble  (or check USB product string)
 
 [notes]
 text = """
 Example Pi entry. Copy to pis/<your-name>.toml and edit ssh_host + ble_name.
-ble_name must match the BLE_NAME baked into the image (image/stage-piloop config).
+ble_name is derived per-device: piloop-<last 4 of /proc/cpuinfo Serial, uppercase>.
+Override by setting BLE_NAME in /etc/piloop/agent.env on the Pi.
 """
