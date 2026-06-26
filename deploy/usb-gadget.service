@@ -1,0 +1,15 @@
+[Unit]
+Description=USB composite gadget (ECM + ACM) for recovery access
+After=systemd-modules-load.service
+Before=NetworkManager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/usb-gadget-setup.sh
+RemainAfterExit=yes
+Restart=on-failure
+RestartSec=5
+StartLimitBurst=3
+
+[Install]
+WantedBy=multi-user.target

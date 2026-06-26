@@ -1,0 +1,14 @@
+[Unit]
+Description=pi-loop agent loop (headless — journald only, no BLE console)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+EnvironmentFile=-/etc/piloop/agent.env
+ExecStart=/usr/bin/python3 /opt/piloop/agent/loop.py
+Restart=always
+RestartSec=3
+User=root
+
+[Install]
+WantedBy=multi-user.target

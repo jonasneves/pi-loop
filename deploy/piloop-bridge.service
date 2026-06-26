@@ -1,0 +1,20 @@
+[Unit]
+Description=pi-loop BLE console bridge (PTY <-> Nordic UART)
+# BlueZ for GATT/advertising. Wraps the agent loop so its console streams over
+# BLE to tab-device. NOT a boot dependency of anything — BlueZ starts late.
+After=bluetooth.target piloop-agent.service
+Wants=bluetooth.target
+
+[Service]
+# Bridges the agent service's console. The agent runs as its own service writing
+# to a known PTY device; the bridge attaches the BLE side. We run the agent
+# *through* the bridge's PTY here: the bridge forks the loop as its child.
+Environment=BLE_NAME=piloop
+EnvironmentFile=-/etc/piloop/agent.env
+ExecStart=/usr/bin/python3 /opt/piloop/bridge/bridge.py -- /usr/bin/python3 /opt/piloop/agent/loop.py
+Restart=always
+RestartSec=3
+User=root
+
+[Install]
+WantedBy=multi-user.target
