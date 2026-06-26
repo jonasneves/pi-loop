@@ -1,0 +1,45 @@
+name: build-image
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['image-v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build-image:
+    runs-on: ubuntu-22.04-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Pi image
+        id: build
+        uses: usimd/pi-gen-action@v1
+        with:
+          pi-gen-version: 2026-06-18-raspios-bookworm-arm64
+          image-name: piloop
+          hostname: piloop
+          release: bookworm
+          locale: en_US.UTF-8
+          timezone: America/New_York
+          keyboard-keymap: us
+          keyboard-layout: English (US)
+          verbose-output: true
+          enable-ssh: 1
+          username: pi
+          password: ''
+          pubkey-only-ssh: 1
+          pubkey-ssh-first-user: >-
+            ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMalS/trWZcu/jbBu42I1rC8MUe5qR8A5Vnk9lloSQfW jonasneves@Jonass-MacBook-Pro.local
+          stage-list: stage0 stage1 stage2 ./image/stage-piloop
+          compression: xz
+          export-last-stage-only: true
+          enable-pigen-cache: true
+
+      - name: Attach image to release
+        if: startsWith(github.ref, 'refs/tags/image-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.build.outputs.image-path }}
