@@ -26,8 +26,8 @@ def chunk(data: bytes, size: int):
 
 
 async def run_bridge(command: list[str], ble_name: str) -> None:
-    from bless import (BlessServer, BlessGATTCharacteristicProperties,
-                       GATTCharacteristicProperties, GATTAttributePermissions)
+    from bless import (BlessServer, GATTCharacteristicProperties,
+                       GATTAttributePermissions)
 
     pid, master_fd = pty.fork()
     if pid == 0:  # child: become the command
