@@ -1,0 +1,5 @@
+.worktree/
+vendor/
+__pycache__/
+*.pyc
+.venv/
