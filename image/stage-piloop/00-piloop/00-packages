@@ -1,0 +1,7 @@
+avahi-daemon
+bluez
+network-manager
+python3
+python3-pip
+python3-venv
+libdbus-1-3
