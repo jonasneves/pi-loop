@@ -1,0 +1,23 @@
+[project]
+name = "pi-loop"
+version = "0.0.1"
+description = "A Raspberry Pi agentic-loop substrate: a Pi runs a Claude Agent SDK loop on itself, its console bridged over BLE to a browser terminal."
+requires-python = ">=3.11"
+dependencies = ["asyncssh>=2.14", "zeroconf>=0.131", "bleak>=0.22"]
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.2"]
+
+[project.scripts]
+piloop = "piloop.cli:main"
+piloop-mcp = "piloop.mcp:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["piloop"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
