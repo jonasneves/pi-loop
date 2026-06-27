@@ -1,7 +1,7 @@
 [project]
 name = "pi-loop"
 version = "0.0.1"
-description = "A Raspberry Pi agentic-loop substrate: a Pi runs a Claude Agent SDK loop on itself, its console bridged over BLE to a browser terminal."
+description = "esp32-loop for a Linux Pi: a controllable arm reachable over WiFi (SSH) and BLE (a Nordic UART shell), with BLE as the out-of-band recovery channel."
 requires-python = ">=3.11"
 dependencies = ["asyncssh>=2.14", "zeroconf>=0.131", "bleak>=0.22"]
 

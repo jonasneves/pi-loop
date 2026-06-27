@@ -1,7 +1,7 @@
-"""Host→Pi transport. SSH (asyncssh) carries the high-bandwidth ops — deploy,
-logs, reboot, shell. Discovery finds Pis two ways: mDNS (an _ssh._tcp sweep) and
-a BLE advert scan (the bridge's NUS advertisement). BLE the console itself is
-NOT here — tab-device owns that; the host only ever names the ble_name."""
+"""Host→Pi transport. SSH (asyncssh) carries the high-bandwidth ops — exec,
+reboot, shell. Discovery finds Pis two ways: mDNS (an _ssh._tcp sweep) and a BLE
+advert scan (the bridge's NUS advertisement). The BLE shell itself is NOT here —
+tab-device owns that channel; the host only ever names the ble_name."""
 import asyncio
 
 import asyncssh
@@ -23,19 +23,6 @@ async def run(pi: dict, command: str, *, check: bool = True) -> str:
         raise SSHError(f"{pi['ssh_host']}: `{command}` exited {result.exit_status}: "
                        f"{result.stderr.strip()}")
     return result.stdout
-
-
-async def stream(pi: dict, command: str):
-    """Yield stdout lines live — for `logs` (journalctl -f)."""
-    try:
-        async with asyncssh.connect(
-            pi["ssh_host"], username=pi["user"], known_hosts=None
-        ) as conn:
-            async with conn.create_process(command) as proc:
-                async for line in proc.stdout:
-                    yield line.rstrip("\n")
-    except (OSError, asyncssh.Error) as e:
-        raise SSHError(f"{pi['ssh_host']}: {e}")
 
 
 async def discover_mdns(seconds: float = 3) -> list[dict]:

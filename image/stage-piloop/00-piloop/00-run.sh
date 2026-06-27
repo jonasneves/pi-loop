@@ -1,17 +1,15 @@
 #!/bin/bash -e
 # Host context (has ROOTFS_DIR): drop pi-loop's on-Pi files into the rootfs.
-# Repo dirs agent/, bridge/, deploy/ are copied straight in; the USB-gadget boot
-# patches are lifted from hub wholesale.
+# The BLE shell bridge and deploy/ units are copied straight in; the USB-gadget
+# boot patches are lifted from hub wholesale.
 
 REPO="$(cd "$(dirname "$0")/../../.." && pwd)"   # repo root from the stage dir
 
-# --- agent loop + bridge ---
-install -d "${ROOTFS_DIR}/opt/piloop/agent" "${ROOTFS_DIR}/opt/piloop/bridge"
-cp "${REPO}/agent/"*.py "${REPO}/agent/config.toml" "${ROOTFS_DIR}/opt/piloop/agent/"
-cp "${REPO}/bridge/bridge.py"                        "${ROOTFS_DIR}/opt/piloop/bridge/"
+# --- BLE shell bridge ---
+install -d "${ROOTFS_DIR}/opt/piloop/bridge"
+cp "${REPO}/bridge/bridge.py" "${ROOTFS_DIR}/opt/piloop/bridge/"
 
 # --- systemd units ---
-install -m 0644 "${REPO}/deploy/piloop-agent.service"  "${ROOTFS_DIR}/etc/systemd/system/piloop-agent.service"
 install -m 0644 "${REPO}/deploy/piloop-bridge.service" "${ROOTFS_DIR}/etc/systemd/system/piloop-bridge.service"
 
 # --- USB-gadget recovery (lifted from hub) ---
@@ -54,9 +52,9 @@ ExecStart=
 ExecStart=-/sbin/agetty --autologin pi --keep-baud 115200,57600,38400,9600 %I $TERM
 AUTOEOF
 
-# Agent env file placeholder — the API key is dropped here out-of-band (never
-# baked into the repo or image). Empty file so EnvironmentFile=- finds something.
+# Optional bridge env — override the auto-derived BLE name here if wanted. The
+# Pi holds NO secret: the brain lives in the browser, the Pi is just an arm.
 install -d -m 0755 "${ROOTFS_DIR}/etc/piloop"
-echo "# ANTHROPIC_API_KEY=...   (drop the real key here; never commit it)" \
-  > "${ROOTFS_DIR}/etc/piloop/agent.env"
-chmod 600 "${ROOTFS_DIR}/etc/piloop/agent.env"
+echo "# BLE_NAME=piloop-XXXX   (optional; bridge auto-derives from CPU serial)" \
+  > "${ROOTFS_DIR}/etc/piloop/bridge.env"
+chmod 644 "${ROOTFS_DIR}/etc/piloop/bridge.env"

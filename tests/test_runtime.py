@@ -11,19 +11,22 @@ def test_console_is_pure_registry_read():
 
 
 @pytest.mark.asyncio
-async def test_status_reports_reachable_and_agent(monkeypatch):
+async def test_status_reports_reachable_uptime_load_and_shell(monkeypatch):
     async def fake_run(pi, command, check=True):
+        if command.startswith("uptime"):
+            return "up 2 hours, 5 minutes\n"
+        if "loadavg" in command:
+            return "0.14 0.09 0.05 1/123 4567\n"
         if "is-active" in command:
             return "active\n"
-        if "show" in command:  # last tick from journald
-            return "Tue 2026-06-26 10:00:01\n"
         return ""
     monkeypatch.setattr(runtime.T, "run", fake_run)
     out = await runtime.status("example")
     assert out["pi"] == "example"
     assert out["reachable"] is True
-    assert out["agent_active"] is True
-    assert out["last_tick"]
+    assert out["uptime"] == "up 2 hours, 5 minutes"
+    assert out["load"] == "0.14"
+    assert out["ble_shell"] is True
 
 
 @pytest.mark.asyncio
@@ -33,7 +36,24 @@ async def test_status_unreachable(monkeypatch):
     monkeypatch.setattr(runtime.T, "run", fake_run)
     out = await runtime.status("example")
     assert out["reachable"] is False
-    assert out["agent_active"] is None
+    assert out["uptime"] is None
+    assert out["ble_shell"] is None
+
+
+@pytest.mark.asyncio
+async def test_exec_returns_output(monkeypatch):
+    seen = {}
+    async def fake_run(pi, command, check=True):
+        seen["command"] = command
+        seen["check"] = check
+        return "hello\n"
+    monkeypatch.setattr(runtime.T, "run", fake_run)
+    out = await runtime.exec("example", "echo hello")
+    assert out["pi"] == "example"
+    assert out["command"] == "echo hello"
+    assert out["output"] == "hello\n"
+    assert seen["command"] == "echo hello"
+    assert seen["check"] is False  # nonzero exit is a result, not an error
 
 
 @pytest.mark.asyncio

@@ -1,15 +1,19 @@
 [Unit]
-Description=pi-loop BLE console bridge (PTY <-> Nordic UART)
-# BlueZ for GATT/advertising. Wraps the agent loop so its console streams over
-# BLE to tab-device. NOT a boot dependency of anything — BlueZ starts late.
-After=bluetooth.target piloop-agent.service
+Description=pi-loop BLE shell bridge (PTY <-> Nordic UART)
+# BlueZ for GATT/advertising. Exposes a root login shell over BLE Nordic UART to
+# tab-device — the out-of-band channel when WiFi is down. NOT a boot dependency
+# of anything; BlueZ starts late, so this is never a boot console (the USB-gadget
+# serial is the deeper recovery path).
+After=bluetooth.target
 Wants=bluetooth.target
 
 [Service]
-# This service IS the running loop. It forks loop.py as its child under the PTY
-# and is the unit the host's status/logs/deploy commands target.
-EnvironmentFile=-/etc/piloop/agent.env
-ExecStart=/usr/bin/python3 /opt/piloop/bridge/bridge.py -- /usr/bin/python3 /opt/piloop/agent/loop.py
+# bridge.py forks /bin/bash under a PTY and mirrors it to the NUS RX/TX pair that
+# tab-device's property-bind discovers. This is the BLE control surface the
+# host's `console` verb points tab-device at. BLE_NAME defaults to
+# piloop-<CPU-serial-suffix>; override it in bridge.env if wanted.
+EnvironmentFile=-/etc/piloop/bridge.env
+ExecStart=/usr/bin/python3 /opt/piloop/bridge/bridge.py -- /bin/bash -l
 Restart=always
 RestartSec=3
 User=root

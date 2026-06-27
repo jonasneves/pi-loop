@@ -3,4 +3,5 @@ vendor/
 __pycache__/
 *.pyc
 .venv/
-docs/superpowers/
+# Internal planning/process artifacts (specs, plans) — never on the public repo.
+docs/

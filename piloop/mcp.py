@@ -1,6 +1,10 @@
 """MCP wrapper over the same runtime verbs — opt-in (`pip install '.[mcp]'`).
 Thin: each tool calls runtime and returns its data or a success string. The
-impl functions are split out so they're unit-testable without a live server."""
+impl functions are split out so they're unit-testable without a live server.
+
+This is the brain's WiFi control surface: the external agent reaches a Pi over
+SSH through these tools when WiFi is up, and falls back to the BLE shell
+(via `console` → tab-device) when it isn't."""
 from mcp.server.fastmcp import FastMCP
 
 from piloop import pis as B
@@ -26,21 +30,23 @@ def pis() -> list[dict]:
 
 @mcp.tool()
 async def status(pi: str) -> dict:
-    """Reachable? agent loop up? last tick? One structured read over SSH."""
+    """Reachable? uptime, load average, and whether the BLE shell is up. One
+    structured read over SSH."""
     return await R.status(pi)
 
 
 @mcp.tool()
-async def deploy(pi: str) -> str:
-    """rsync the repo's agent/ to the Pi and restart the loop."""
-    from piloop.cli import REPO_AGENT_DIR
-    await R.deploy(pi, REPO_AGENT_DIR)
-    return f"{pi}: deployed and restarted."
+async def exec(pi: str, command: str) -> dict:
+    """Run a shell command on the Pi over SSH and return its output. The
+    high-bandwidth WiFi control primitive — use this to drive the Pi when WiFi
+    is up."""
+    return await R.exec(pi, command)
 
 
 @mcp.tool()
 async def console(pi: str) -> str:
-    """The ble_name to connect to from tab-device (the host doesn't stream BLE)."""
+    """The ble_name to connect to from tab-device — the out-of-band BLE shell
+    for when WiFi is down (the host doesn't stream BLE itself)."""
     return await _console_impl(pi)
 
 

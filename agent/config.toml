@@ -1,9 +1,0 @@
-# agent/config.toml — the per-deployment task. The ONLY file a deployment edits.
-# loop.py reads this and never carries task knowledge itself.
-[task]
-prompt  = "You maintain this Raspberry Pi. Each cycle, check disk usage and the health of running services, and note any anomaly you find."
-cadence = "interval"     # one-shot | interval | continuous
-every   = "5m"           # used when cadence = interval
-
-[tools]
-allow = ["Bash", "Read", "Write"]   # the Agent SDK tool allowlist for this task

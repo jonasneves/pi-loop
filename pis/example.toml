@@ -9,5 +9,5 @@ ble_name = "piloop-XXXX"  # bridge advertises piloop-<SUFFIX> where SUFFIX = las
 text = """
 Example Pi entry. Copy to pis/<your-name>.toml and edit ssh_host + ble_name.
 ble_name is derived per-device: piloop-<last 4 of /proc/cpuinfo Serial, uppercase>.
-Override by setting BLE_NAME in /etc/piloop/agent.env on the Pi.
+Override by setting BLE_NAME in /etc/piloop/bridge.env on the Pi.
 """

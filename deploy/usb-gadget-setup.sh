@@ -1,6 +1,6 @@
 #!/bin/bash
 # USB composite gadget (ECM ethernet + ACM serial) via ConfigFS. Runs
-# independently of the agent/bridge services so a crashed loop still exposes
+# independently of the BLE bridge service so a dead bridge still exposes
 # `ssh pi@10.55.0.1` (ECM) and a serial console at /dev/ttyGS0 (ACM).
 set -uo pipefail
 

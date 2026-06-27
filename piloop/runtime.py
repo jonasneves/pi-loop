@@ -2,54 +2,44 @@
 formatting layers, so this one source serves both (esp32-loop's rule). Each verb
 takes a pi *handle*, resolves it through the registry, and runs over SSH.
 
-The console verb is the deliberate asymmetry: it's a pure registry read that
-hands you the ble_name to type into tab-device. The host never speaks BLE — the
-console lives there, and tab-device is already its client."""
-from pathlib import Path
-
+The Pi is a controllable arm, not a brain: these verbs are the WiFi control
+surface the external brain drives. `exec` is the core primitive (run a command,
+get output — esp32-loop's `send`). The `console` verb is the deliberate
+asymmetry: a pure registry read handing you the ble_name to type into tab-device
+when WiFi is down. The host never speaks BLE — tab-device owns that channel."""
 from piloop import pis as B
 from piloop import transport as T
 
-LOOP_SERVICE = "piloop-bridge.service"
-AGENT_DEST = "/opt/piloop/agent"
+# The BLE shell unit: bridge.py forks /bin/bash under a PTY and mirrors it to
+# Nordic UART. `status` reports whether that out-of-band channel is up.
+SHELL_SERVICE = "piloop-bridge.service"
 
 
 async def status(pi: str) -> dict:
     p = B.load_pi(pi)
     out = {"pi": pi, "ssh_host": p["ssh_host"], "reachable": False,
-           "agent_active": None, "last_tick": None}
+           "uptime": None, "load": None, "ble_shell": None}
     try:
-        active = await T.run(p, f"systemctl is-active {LOOP_SERVICE}", check=False)
+        upt = await T.run(p, "uptime -p", check=False)
         out["reachable"] = True
-        out["agent_active"] = active.strip() == "active"
-        tick = await T.run(
-            p, f"systemctl show -p ActiveEnterTimestamp --value {LOOP_SERVICE}",
-            check=False)
-        out["last_tick"] = tick.strip() or None
+        out["uptime"] = upt.strip() or None
+        load = await T.run(p, "cat /proc/loadavg", check=False)
+        out["load"] = load.split()[0] if load.strip() else None
+        active = await T.run(p, f"systemctl is-active {SHELL_SERVICE}", check=False)
+        out["ble_shell"] = active.strip() == "active"
     except T.SSHError:
         pass  # unreachable — absence is the answer, not an error
     return out
 
 
-async def deploy(pi: str, agent_dir: Path) -> dict:
-    """rsync the agent dir to the Pi and restart its service. agent_dir is the
-    repo's agent/ — loop.py + config.toml. Uses ssh as rsync's transport."""
+async def exec(pi: str, command: str) -> dict:
+    """Run a command on the Pi over SSH and return its output. The brain's core
+    WiFi control primitive — mirrors esp32-loop's `send`. Nonzero exit is not an
+    error here: the output (incl. stderr-less stdout) is the result the caller
+    reads. Connection failure still raises SSHError."""
     p = B.load_pi(pi)
-    target = f"{p['user']}@{p['ssh_host']}:{AGENT_DEST}/"
-    import asyncio
-    proc = await asyncio.create_subprocess_exec(
-        "rsync", "-az", "--delete", f"{Path(agent_dir)}/", target,
-        "-e", "ssh -o StrictHostKeyChecking=accept-new")
-    if await proc.wait() != 0:
-        raise T.SSHError(f"{p['ssh_host']}: rsync failed")
-    await T.run(p, f"sudo systemctl restart {LOOP_SERVICE}")
-    return {"pi": pi, "synced": True}
-
-
-async def logs(pi: str):
-    p = B.load_pi(pi)
-    async for line in T.stream(p, f"journalctl -fu {LOOP_SERVICE} -n 40 -o cat"):
-        yield line
+    output = await T.run(p, command, check=False)
+    return {"pi": pi, "command": command, "output": output}
 
 
 def console(pi: str) -> dict:
