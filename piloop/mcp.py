@@ -82,7 +82,7 @@ def relay_allow(env=os.environ) -> list[str]:
 
 def main() -> None:
     """stdio by default. `--relay` serves the same tools through the MCP relay
-    (relay.neves.cloud) to claude.ai, Cursor or VS Code: `exec` is a shell on every
+    (relay.kandue.app) to claude.ai, Cursor or VS Code: `exec` is a shell on every
     registered Pi, so it is refused unless PILOOP_RELAY_ALLOW names the GitHub logins
     that may sign in to it."""
     if "--relay" not in sys.argv[1:]:
