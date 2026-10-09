@@ -29,6 +29,12 @@ is its client, so the host just tells you what to `connect ble`.
 The same verbs are exposed over MCP (`pip install '.[mcp]'`, `piloop-mcp`), so an
 agent can drive a Pi over WiFi as tools.
 
+From claude.ai, Cursor or VS Code without a local install on the client side,
+`PILOOP_RELAY_ALLOW=<your-github-login> piloop-mcp --relay` serves the same tools through the
+[MCP relay](https://github.com/jonasneves/mcp-relay) and prints the address to add. The relay
+answers only a caller signed in with GitHub as one of those accounts: `exec` is a shell on
+every registered Pi. The host's key is `~/.config/piloop/relay.key` (0600); delete it to rotate.
+
 ## The BLE shell — out-of-band recovery
 
 The image runs `bridge.py` as a systemd service: it forks `/bin/bash` under a
