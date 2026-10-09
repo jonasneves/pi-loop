@@ -32,3 +32,12 @@ def test_relay_allow_list_parses_logins():
     from piloop import mcp as M
     assert M.relay_allow({"PILOOP_RELAY_ALLOW": " jonasneves , "}) == ["jonasneves"]
     assert M.relay_allow({}) == []
+
+
+def test_relay_key_is_owner_only_and_stable(tmp_path, monkeypatch):
+    import os
+    from piloop import mcp as M
+    monkeypatch.setattr(M, "RELAY_KEY", tmp_path / "cfg" / "relay.key")
+    key = M.relay_key()
+    assert os.stat(M.RELAY_KEY).st_mode & 0o777 == 0o600
+    assert M.relay_key() == key

@@ -18,6 +18,7 @@ import asyncio
 import base64
 import hashlib
 import json
+import os
 import secrets
 import sys
 from typing import Any, Awaitable, Callable, Optional
@@ -29,6 +30,26 @@ MAX_BACKOFF_S = 30
 
 def new_key() -> str:
     return base64.urlsafe_b64encode(secrets.token_bytes(32)).decode().rstrip("=")
+
+
+def load_or_create_key(path) -> str:
+    """The app's private key at `path`, created on first use. Created owner-only (0600) in
+    the same call that makes the file, never chmod'ed after, so no other user can read it
+    in between."""
+    path = os.path.expanduser(str(path))
+    try:
+        with open(path) as f:
+            key = f.read().strip()
+        if key:
+            return key
+    except FileNotFoundError:
+        pass
+    os.makedirs(os.path.dirname(path), mode=0o700, exist_ok=True)
+    key = new_key()
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, "w") as f:
+        f.write(key + "\n")
+    return key
 
 
 def address_of(key: str) -> str:

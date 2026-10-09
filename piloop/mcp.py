@@ -71,19 +71,9 @@ RELAY_KEY = Path.home() / ".config" / "piloop" / "relay.key"
 
 
 def relay_key() -> str:
-    """This host's private relay key, made on first use (0600)."""
-    from piloop.relay_client import new_key
-    try:
-        key = RELAY_KEY.read_text().strip()
-        if key:
-            return key
-    except FileNotFoundError:
-        pass
-    RELAY_KEY.parent.mkdir(parents=True, exist_ok=True)
-    key = new_key()
-    RELAY_KEY.write_text(key + "\n")
-    RELAY_KEY.chmod(0o600)
-    return key
+    """This host's private relay key, made on first use (owner-only from creation)."""
+    from piloop.relay_client import load_or_create_key
+    return load_or_create_key(RELAY_KEY)
 
 
 def relay_allow(env=os.environ) -> list[str]:
