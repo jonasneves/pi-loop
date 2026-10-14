@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- A Pi board inside a loop of two arcs, one per channel that reaches it (WiFi and BLE), so losing one still leaves a way in. -->
+  <rect x="1" y="1" width="126" height="126" rx="28" fill="#0f2a1d"/>
+  <path fill="none" stroke="#e8446f" stroke-width="10" stroke-linecap="round" d="M44 24A44 44 0 0 0 44 104"/>
+  <path fill="none" stroke="#f2f2ea" stroke-width="10" stroke-linecap="round" d="M84 24A44 44 0 0 1 84 104"/>
+  <rect x="42" y="46" width="44" height="36" rx="6" fill="#3fae5a"/>
+  <rect x="54" y="56" width="20" height="16" rx="3" fill="#0f2a1d"/>
+</svg>
